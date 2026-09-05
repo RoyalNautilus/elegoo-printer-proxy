@@ -54,18 +54,14 @@ jobs:
           # 3. Handle docker-compose.example.yml -> docker-compose.yml
           if [ -f "docker-compose.example.yml" ]; then
             echo "Found docker-compose.example.yml. Setting up docker-compose.yml..."
-            mv -f docker-compose.example.yml docker-compose.yml
+            mv -f docker-compose.example.yml docker-compose.yml          
             
-            # 4. Strip out the specific multi-line env_file block
-            echo "Removing .env.cc1 env_file section..."
-            sed -i '/env_file:/,/- \.env\.cc1/d' docker-compose.yml
-            
-            # 5. Remove the entire cc1-proxy service section block
+            # 4. Remove the entire cc1-proxy service section block
             # This looks for the service header 'cc1-proxy:' and deletes down to the next service block
             echo "Removing entire cc1-proxy container section..."
             sed -i '/cc1-proxy:/,/cc2-proxy:/ { /cc2-proxy:/!d }' docker-compose.yml
             
-            # 6. Adjust the bind mount path inside docker-compose.yml
+            # 5. Adjust the bind mount path inside docker-compose.yml
             # CHANGE '/old/path' and '/new/path' to match your actual requirements
             OLD_PATH="./gcode-archive"
             NEW_PATH="/mnt/user/appdata/elegoo-print-proxy"
