@@ -1,12 +1,12 @@
-name: Sync Fork from Upstream
+name: Sync Fork and Setup Environment
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily
+    - cron: '0 0 * * *' # Runs daily at midnight
   workflow_dispatch: # Allows manual trigger button
 
 jobs:
-  sync:
+  sync-and-setup:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,27 +15,53 @@ jobs:
       - name: Checkout Fork
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # Fetches all history so git can merge properly
+          fetch-depth: 0 # Fetches full history for a smooth merge
 
       - name: Configure Git Identity
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@://github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Sync and Merge Upstream Changes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Add the upstream remote pointer
-          # CHANGE 'upstream-owner/upstream-repo' to the original repository's path (e.g., facebook/react)
-          git remote add upstream https://github.com/lantern-eight/elegoo-printer-proxy
-          
-          # 2. Fetch upstream branches
+          # 1. Add upstream and fetch
+          git remote add upstream https://github.com
           git fetch upstream main
           
-          # 3. Merge upstream changes into your fork's active branch
-          # This keeps your renamed file while pulling in their updates
+          # 2. Merge upstream updates into your fork
           git merge upstream/main --no-edit
+
+      - name: Handle Configuration Files
+        run: |
+          # Flag to track if we made changes that need committing
+          CHANGES_MADE=false
           
-          # 4. Push the merged result back to your personal fork
+          # 1. Handle .env.example -> .env
+          if [ -f ".env.example" ]; then
+            echo "Found .env.example. Setting up .env..."
+            # Using standard 'mv' instead of 'git mv' since .env is typically in .gitignore 
+            # and shouldn't track upstream history, but we force git to track your local version.
+            mv -f .env.example .env
+            git add -f .env
+            CHANGES_MADE=true
+          fi
+          
+          # 2. Handle docker-compose.example.yml -> docker-compose.yml
+          if [ -f "docker-compose.example.yml" ]; then
+            echo "Found docker-compose.example.yml. Setting up docker-compose.yml..."
+            mv -f docker-compose.example.yml docker-compose.yml
+            git add -f docker-compose.yml
+            CHANGES_MADE=true
+          fi
+          
+          # 3. Commit only if files were actually processed
+          if [ "$CHANGES_MADE" = true ]; then
+            git commit -m "Automated: Processed configuration files from upstream template"
+          else
+            echo "No template files found to process."
+          fi
+
+      - name: Push Combined Changes
+        run: |
+          # Pushes both the upstream merge and your file modifications together
           git push origin HEAD
