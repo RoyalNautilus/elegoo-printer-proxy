@@ -25,7 +25,7 @@ jobs:
       - name: Sync and Merge Upstream Changes
         run: |
           # 1. Add upstream and fetch
-          git remote add upstream https://github.com
+          git remote add upstream https://github.com/lantern-eight/elegoo-printer-proxy
           git fetch upstream main
           
           # 2. Merge upstream updates into your fork
