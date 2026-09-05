@@ -40,21 +40,32 @@ jobs:
           if [ -f ".env.example" ]; then
             echo "Found .env.example. Setting up .env..."
             mv -f .env.example .env
+            
+            # 2. Recode the PRINTER_IP variable
+            # CHANGE '192.168.1.100' to your actual target printer IP address
+            TARGET_IP="192.168.0.73"
+            echo "Updating PRINTER_IP to $TARGET_IP..."
+            sed -i "s|^PRINTER_IP=.*|PRINTER_IP=$TARGET_IP|g" .env
+            
             git add -f .env
             CHANGES_MADE=true
           fi
           
-          # 2. Handle docker-compose.example.yml -> docker-compose.yml
+          # 3. Handle docker-compose.example.yml -> docker-compose.yml
           if [ -f "docker-compose.example.yml" ]; then
             echo "Found docker-compose.example.yml. Setting up docker-compose.yml..."
             mv -f docker-compose.example.yml docker-compose.yml
             
-            # 3. Strip out the specific env_file blocks
-            echo "Removing .env.cc1 and .env.cc2 env_file sections..."
+            # 4. Strip out the specific multi-line env_file block
+            echo "Removing .env.cc2 env_file section..."
             sed -i '/env_file:/,/- \.env\.cc2/d' docker-compose.yml
-            sed -i '/env_file:/,/- \.env\.cc1/d' docker-compose.yml
             
-            # 4. Adjust the bind mount path inside docker-compose.yml
+            # 5. Remove the entire cc1 service section block
+            # This looks for the service header 'elegoo-proxy-cc1:' and deletes down to the next service block
+            echo "Removing entire cc1 container section..."
+            sed -i '/elegoo-proxy-cc1:/,/elegoo-proxy-cc2:/ { /elegoo-proxy-cc2:/!d }' docker-compose.yml
+            
+            # 6. Adjust the bind mount path inside docker-compose.yml
             # CHANGE '/old/path' and '/new/path' to match your actual requirements
             OLD_PATH="./gcode-archive"
             NEW_PATH="/mnt/user/appdata/elegoo-print-proxy"
@@ -66,9 +77,9 @@ jobs:
             CHANGES_MADE=true
           fi
           
-          # 4. Commit only if files were actually processed
+          # 7. Commit only if files were actually processed
           if [ "$CHANGES_MADE" = true ]; then
-            git commit -m "Automated: Processed configurations and updated bind mount paths"
+            git commit -m "Automated: Setup environment vars, stripped cc1 section, and updated paths"
           else
             echo "No template files found to process."
           fi
