@@ -36,14 +36,14 @@ jobs:
           # Flag to track if we made changes that need committing
           CHANGES_MADE=false
           
-         # 1. Handle .env.example -> .env.cc2
-         if [ -f ".env.example" ]; then
+          # 1. Handle .env.example -> .env.cc2
+          if [ -f ".env.example" ]; then
             echo "Found .env.example. Setting up .env.cc2..."
             mv -f .env.example .env.cc2
             
             # 2. Recode the PRINTER_IP variable inside .env.cc2
             # CHANGE '192.168.1.100' to your actual target printer IP address
-            TARGET_IP="192.168.1.100"
+            TARGET_IP="192.168.0.73"
             echo "Updating PRINTER_IP to $TARGET_IP..."
             sed -i "s|^PRINTER_IP=.*|PRINTER_IP=$TARGET_IP|g" .env.cc2
             
