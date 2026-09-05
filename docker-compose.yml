@@ -30,9 +30,7 @@ services:
       - "192.168.1.101:8080:8080"  # camera MJPEG stream
       - "192.168.1.101:9001:9001"  # MQTT over WebSocket (Device page JS)
     volumes:
-      - ./gcode-archive/cc2:/data/gcode
-    env_file:
-      - .env.cc2
+      - /mnt/user/appdata/elegoo-print-proxy/cc2:/data/gcode
     logging:
       driver: json-file
       options:
@@ -51,11 +49,4 @@ services:
       - "192.168.1.102:3000:3000/udp"  # discovery relay (rewrites MainboardIP)
       - "192.168.1.102:8080:8080"      # camera
     volumes:
-      - ./gcode-archive/cc1:/data/gcode
-    env_file:
-      - .env.cc1
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - /mnt/user/appdata/elegoo-print-proxy/cc1:/data/gcode
