@@ -60,10 +60,10 @@ jobs:
             echo "Removing .env.cc2 env_file section..."
             sed -i '/env_file:/,/- \.env\.cc2/d' docker-compose.yml
             
-            # 5. Remove the entire cc1 service section block
-            # This looks for the service header 'elegoo-proxy-cc1:' and deletes down to the next service block
-            echo "Removing entire cc1 container section..."
-            sed -i '/elegoo-proxy-cc1:/,/elegoo-proxy-cc2:/ { /elegoo-proxy-cc2:/!d }' docker-compose.yml
+            # 5. Remove the entire cc1-proxy service section block
+            # This looks for the service header 'cc1-proxy:' and deletes down to the next service block
+            echo "Removing entire cc1-proxy container section..."
+            sed -i '/cc1-proxy:/,/cc2-proxy:/ { /cc2-proxy:/!d }' docker-compose.yml
             
             # 6. Adjust the bind mount path inside docker-compose.yml
             # CHANGE '/old/path' and '/new/path' to match your actual requirements
